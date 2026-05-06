@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: goaltracker
+      POSTGRES_USER: goaltracker
+      POSTGRES_PASSWORD: goaltracker
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U goaltracker -d goaltracker"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/goaltracker
+      SPRING_DATASOURCE_USERNAME: goaltracker
+      SPRING_DATASOURCE_PASSWORD: goaltracker
+      APP_SECURITY_JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    ports:
+      - "8080:8080"

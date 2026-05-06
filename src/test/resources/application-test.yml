@@ -1,0 +1,17 @@
+# In-memory DB for tests (no Docker). For Testcontainers, use -Dspring.profiles.active=tc
+spring:
+  datasource:
+    url: jdbc:h2:mem:goaltest;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+app:
+  security:
+    jwt:
+      secret: 0123456789abcdef0123456789abcdef

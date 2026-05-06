@@ -1,0 +1,12 @@
+package com.ilyabnae.goaltracker.repository;
+
+import com.ilyabnae.goaltracker.domain.AppUser;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AppUserRepository extends JpaRepository<AppUser, UUID> {
+
+	Optional<AppUser> findByExternalSubject(String externalSubject);
+
+}
