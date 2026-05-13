@@ -9,6 +9,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Сервіс пов'язує запис у БД (AppUser) із JWT-ідентифікатором поточного запиту.
+// Якщо користувача з таким "sub" ще немає — створюємо при першому зверненні.
 @Service
 @RequiredArgsConstructor
 public class UserAccountService {
@@ -20,14 +22,17 @@ public class UserAccountService {
 		return resolveCurrentUser().orElseThrow(() -> new IllegalStateException("Unauthenticated request"));
 	}
 
+	// Основний метод: повертає поточного користувача, створюючи запис при потребі (lazy provisioning)
 	@Transactional
 	public AppUser getOrCreateCurrentUser() {
 		Jwt jwt = requireJwt();
 		String subject = jwt.getSubject();
+		// Шукаємо за "sub" з токена
 		Optional<AppUser> existing = userRepository.findByExternalSubject(subject);
 		if (existing.isPresent()) {
 			return existing.get();
 		}
+		// Першого разу — беремо ім'я зі стандартних claim'ів JWT (name -> preferred_username -> email -> sub)
 		String display = firstNonEmpty(
 				jwt.getClaimAsString("name"),
 				jwt.getClaimAsString("preferred_username"),
@@ -52,6 +57,8 @@ public class UserAccountService {
 		return null;
 	}
 
+	// Дістає JWT із Security-контексту поточного потоку (туди його кладе Spring Security
+	// після успішної валідації Bearer-токена в OAuth2 Resource Server).
 	private static Optional<Jwt> requireJwtOpt() {
 		var auth = SecurityContextHolder.getContext().getAuthentication();
 		if (auth == null || !auth.isAuthenticated() || auth.getPrincipal() == null) {

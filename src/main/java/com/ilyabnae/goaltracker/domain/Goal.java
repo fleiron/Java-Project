@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+// JPA-сутність цілі. Кожна ціль належить одному користувачу (owner).
 @Entity
 @Table(name = "goal")
 @Getter
@@ -28,6 +29,9 @@ public class Goal {
 	@Id
 	private UUID id;
 
+	// Зв'язок "багато цілей -> один користувач".
+	// LAZY: Hibernate не тягне власника, поки до нього не звернутися — економимо запити.
+	// optional=false: ціль не може існувати без власника.
 	@ManyToOne(optional = false, fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)
 	private AppUser owner;
@@ -38,12 +42,19 @@ public class Goal {
 	@Column
 	private String description;
 
+	// Дедлайн без часу — тип LocalDate (дата). NULL означає "без дедлайну"
 	@Column(name = "due_date")
 	private LocalDate dueDate;
 
+	// Зберігаємо у вигляді рядка (PENDING/IN_PROGRESS/...) — не залежимо від ordinal
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false, length = 32)
 	private GoalStatus status;
+
+	// Модерація: користувач створює ціль → PENDING; адмін схвалює → APPROVED або REJECTED
+	@Enumerated(EnumType.STRING)
+	@Column(name = "approval_status", nullable = false, length = 32)
+	private GoalApprovalStatus approvalStatus;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private Instant createdAt;
@@ -51,6 +62,7 @@ public class Goal {
 	@Column(name = "updated_at", nullable = false)
 	private Instant updatedAt;
 
+	// При створенні: генеруємо id, ставимо createdAt і одразу updatedAt = createdAt
 	@PrePersist
 	void onCreate() {
 		if (id == null) {
@@ -60,9 +72,13 @@ public class Goal {
 		if (createdAt == null) {
 			createdAt = now;
 		}
+		if (approvalStatus == null) {
+			approvalStatus = GoalApprovalStatus.PENDING;
+		}
 		updatedAt = createdAt;
 	}
 
+	// При кожному UPDATE автоматично оновлюємо updatedAt
 	@PreUpdate
 	void onUpdate() {
 		updatedAt = Instant.now();
@@ -74,6 +90,7 @@ public class Goal {
 		this.description = description;
 		this.dueDate = dueDate;
 		this.status = status;
+		this.approvalStatus = GoalApprovalStatus.PENDING;
 	}
 
 }

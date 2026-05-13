@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+// REST-контролер цілей. Базовий шлях /api/v1/goals; усі ендпоінти вимагають Bearer JWT.
+// @Tag/@Operation — це Swagger/OpenAPI-анотації, які показують опис у /swagger-ui.html.
 @RestController
 @RequestMapping("/api/v1/goals")
 @Validated
@@ -31,12 +33,14 @@ public class GoalController {
 
 	private final GoalService goalService;
 
+	// GET /api/v1/goals — список цілей поточного користувача
 	@GetMapping
 	@Operation(summary = "List goals of the current user")
 	public List<GoalResponse> listGoals() {
 		return goalService.listMyGoals();
 	}
 
+	// POST /api/v1/goals — створення; @Valid вмикає Bean Validation для CreateGoalRequest
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(summary = "Create a goal")
@@ -44,18 +48,21 @@ public class GoalController {
 		return goalService.createGoal(request);
 	}
 
+	// GET /api/v1/goals/{id} — деталі цілі (тільки своєї)
 	@GetMapping("/{id}")
 	@Operation(summary = "Get goal by id")
 	public GoalResponse getGoal(@PathVariable UUID id) {
 		return goalService.getGoal(id);
 	}
 
+	// PUT /api/v1/goals/{id} — часткове оновлення (null-поля у тілі не міняють збережене значення)
 	@PutMapping("/{id}")
 	@Operation(summary = "Update goal (partial — null fields stay unchanged)")
 	public GoalResponse updateGoal(@PathVariable UUID id, @Valid @RequestBody UpdateGoalRequest request) {
 		return goalService.updateGoal(id, request);
 	}
 
+	// DELETE /api/v1/goals/{id} — видалення; повертаємо 204 No Content
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(summary = "Delete goal")

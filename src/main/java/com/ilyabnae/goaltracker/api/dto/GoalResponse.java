@@ -1,5 +1,6 @@
 package com.ilyabnae.goaltracker.api.dto;
 
+import com.ilyabnae.goaltracker.domain.GoalApprovalStatus;
 import com.ilyabnae.goaltracker.domain.GoalStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
@@ -13,6 +14,7 @@ public record GoalResponse(
 		String description,
 		LocalDate dueDate,
 		GoalStatus status,
+		@Schema(description = "Статус модерації адміністратором") GoalApprovalStatus approvalStatus,
 		Instant createdAt,
 		Instant updatedAt) {
 }

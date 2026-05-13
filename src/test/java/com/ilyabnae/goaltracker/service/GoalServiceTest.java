@@ -10,6 +10,7 @@ import com.ilyabnae.goaltracker.api.dto.CreateGoalRequest;
 import com.ilyabnae.goaltracker.api.dto.UpdateGoalRequest;
 import com.ilyabnae.goaltracker.domain.AppUser;
 import com.ilyabnae.goaltracker.domain.Goal;
+import com.ilyabnae.goaltracker.domain.GoalApprovalStatus;
 import com.ilyabnae.goaltracker.domain.GoalStatus;
 import com.ilyabnae.goaltracker.error.ResourceNotFoundException;
 import com.ilyabnae.goaltracker.repository.GoalRepository;
@@ -62,6 +63,7 @@ class GoalServiceTest {
 
 		assertThat(res.title()).isEqualTo("Title");
 		assertThat(res.status()).isEqualTo(GoalStatus.PENDING);
+		assertThat(res.approvalStatus()).isEqualTo(GoalApprovalStatus.PENDING);
 		verify(goalRepository).save(any(Goal.class));
 	}
 

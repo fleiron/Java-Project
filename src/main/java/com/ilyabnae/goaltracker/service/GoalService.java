@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+// Бізнес-логіка для цілей. Всі операції виконуються в контексті поточного користувача:
+// чужу ціль ніхто не побачить і не змінить — це наш основний інваріант безпеки.
 @Service
 @RequiredArgsConstructor
 public class GoalService {
@@ -21,6 +23,7 @@ public class GoalService {
 	private final GoalRepository goalRepository;
 	private final UserAccountService userAccountService;
 
+	// Список цілей лише поточного користувача
 	@Transactional(readOnly = true)
 	public List<GoalResponse> listMyGoals() {
 		AppUser user = userAccountService.getOrCreateCurrentUser();
@@ -29,6 +32,7 @@ public class GoalService {
 				.toList();
 	}
 
+	// Якщо id існує, але належить іншому — кидаємо 404, а не 403 (не розкриваємо існування)
 	@Transactional(readOnly = true)
 	public GoalResponse getGoal(UUID id) {
 		AppUser user = userAccountService.getOrCreateCurrentUser();
@@ -41,6 +45,7 @@ public class GoalService {
 	@Transactional
 	public GoalResponse createGoal(CreateGoalRequest request) {
 		AppUser user = userAccountService.getOrCreateCurrentUser();
+		// Якщо клієнт не передав статус — за замовчуванням PENDING
 		Goal goal = new Goal(
 				user,
 				request.title().trim(),
@@ -50,6 +55,7 @@ public class GoalService {
 		return toResponse(goalRepository.save(goal));
 	}
 
+	// Часткове оновлення (PATCH-подібне): null-поля у запиті НЕ змінюють збережені значення
 	@Transactional
 	public GoalResponse updateGoal(UUID id, UpdateGoalRequest request) {
 		AppUser user = userAccountService.getOrCreateCurrentUser();
@@ -87,6 +93,7 @@ public class GoalService {
 				goal.getDescription(),
 				goal.getDueDate(),
 				goal.getStatus(),
+				goal.getApprovalStatus(),
 				goal.getCreatedAt(),
 				goal.getUpdatedAt());
 	}

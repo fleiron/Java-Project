@@ -23,6 +23,24 @@ app:
   security:
     jwt:
       secret: ${JWT_SECRET:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      ttl-seconds: ${JWT_TTL_SECONDS:86400}
+    demo:
+      users:
+        - username: ilya
+          password: ilya123
+          display-name: Ilya
+          roles:
+            - ROLE_USER
+        - username: alice
+          password: alice123
+          display-name: Alice
+          roles:
+            - ROLE_USER
+        - username: admin
+          password: admin123
+          display-name: Admin
+          roles:
+            - ROLE_ADMIN
 
 springdoc:
   api-docs:
